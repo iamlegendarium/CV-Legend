@@ -6,7 +6,7 @@ async function callGroq(prompt, systemPrompt = "") {
   messages.push({ role: "user", content: prompt });
 
   try {
-    const response = await fetch("http://localhost:3000/api/groq", {
+    const response = await fetch("/api/groq", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
