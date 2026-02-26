@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CVLegend — Precision CV Builder</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <div class="logo">CV<span>Legend</span></div>
+        <div class="logo-sub">Precision CV Intelligence</div>
+      </div>
+      <div class="api-badge">AI-Powered</div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('generate')">
+        ① Generate CV
+      </button>
+      <button class="tab" onclick="switchTab('tailor')">② Tailor to Job</button>
+      <button class="tab" onclick="switchTab('score')">
+        ③ Score & Analyse
+      </button>
+      <button class="tab" onclick="switchTab('rewrite')">
+        ④ Rewrite Bullets
+      </button>
+    </div>
+
+    <main>
+      <!-- GENERATE PANEL -->
+      <div class="panel active" id="panel-generate">
+        <div class="section-title">Generate Your CV</div>
+        <div class="section-sub">
+          Fill in your details and we'll craft a professional, ATS-optimised CV
+          from scratch.
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Personal Details</div>
+            <div class="field">
+              <label>Full Name</label
+              ><input type="text" id="g-name" placeholder="e.g. Amara Osei" />
+            </div>
+            <div class="field">
+              <label>Job Title / Role</label
+              ><input
+                type="text"
+                id="g-role"
+                placeholder="e.g. Senior Product Manager"
+              />
+            </div>
+            <div class="field">
+              <label>Email</label
+              ><input type="text" id="g-email" placeholder="amara@email.com" />
+            </div>
+            <div class="field">
+              <label>Phone</label
+              ><input
+                type="text"
+                id="g-contact"
+                placeholder="+44 7700 000000"
+              />
+            </div>
+            <div class="field">
+              <label>LinkedIn / Portfolio</label
+              ><input
+                type="text"
+                id="g-links"
+                placeholder="linkedin.com/in/amara"
+              />
+            </div>
+            <div class="field">
+              <label>Full Address</label
+              ><input
+                type="text"
+                id="g-address"
+                placeholder="123 High Street, London, SW1A 1AA, UK"
+              />
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Professional Summary</div>
+            <div class="field">
+              <label
+                >Write a brief summary or key highlights — we'll expand
+                it</label
+              >
+              <textarea
+                id="g-summary"
+                placeholder="10+ years in product management, led cross-functional teams, launched B2B SaaS products..."
+              ></textarea>
+            </div>
+            <div class="field">
+              <label>Target Role / Industry</label
+              ><input
+                type="text"
+                id="g-target"
+                placeholder="e.g. Head of Product at a fintech startup"
+              />
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Work Experience</div>
+            <div class="field">
+              <label
+                >Paste your experience (roles, dates, responsibilities)</label
+              >
+              <textarea
+                id="g-experience"
+                style="min-height: 150px"
+                placeholder="Product Manager @ Monzo (2021–2024): Led checkout redesign, managed roadmap, grew team from 3 to 9...&#10;&#10;Associate PM @ HSBC (2018–2021): Launched mobile banking feature..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Education & Skills</div>
+            <div class="field">
+              <label>Education</label
+              ><textarea
+                id="g-education"
+                placeholder="BSc Computer Science, UCL, 2018 (2:1)&#10;Product Management Certification, Product School, 2020"
+              ></textarea>
+            </div>
+            <div class="field">
+              <label>Key Skills (comma separated)</label
+              ><input
+                type="text"
+                id="g-skills"
+                placeholder="Agile, Jira, SQL, Stakeholder Management, OKRs"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="generateCV()">
+            ✦ Generate Full CV
+          </button>
+        </div>
+
+        <div class="loader" id="gen-loader">
+          <div class="spinner"></div>
+          <span
+            >Forging your CV<span class="dots"
+              ><span>.</span><span>.</span><span>.</span></span
+            ></span
+          >
+        </div>
+
+        <div id="gen-output" style="margin-top: 2rem; display: none">
+          <hr />
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <div class="section-title" style="font-size: 1.3rem; margin: 0">
+              Your CV
+            </div>
+            <div style="display: flex; gap: 0.5rem">
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="downloadTxt('gen-cv-text', 'cv.txt')"
+              >
+                ↓ TXT
+              </button>
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="downloadDoc('gen-cv-text', 'cv.doc')"
+              >
+                ↓ DOC
+              </button>
+              <button
+                class="btn btn-gold btn-sm"
+                onclick="downloadPDF('gen-cv-text')"
+              >
+                ↓ PDF
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="copyToTailor()">
+                → Send to Tailor
+              </button>
+            </div>
+          </div>
+          <div class="output-box" id="gen-cv-text"></div>
+        </div>
+      </div>
+
+      <!-- TAILOR PANEL -->
+      <div class="panel" id="panel-tailor">
+        <div class="section-title">Tailor CV to Job</div>
+        <div class="section-sub">
+          Paste your existing CV and a job description — we'll reshape it to
+          match perfectly.
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Your Current CV</div>
+            <div class="field">
+              <textarea
+                id="t-cv"
+                style="min-height: 300px"
+                placeholder="Paste your full CV text here..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Job Description</div>
+            <div class="field">
+              <textarea
+                id="t-jd"
+                style="min-height: 300px"
+                placeholder="Paste the full job description here, including responsibilities, requirements, and company info..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="tailorCV()">
+            ✦ Tailor My CV
+          </button>
+        </div>
+
+        <div class="loader" id="tailor-loader">
+          <div class="spinner"></div>
+          <span
+            >Aligning your CV to the role<span class="dots"
+              ><span>.</span><span>.</span><span>.</span></span
+            ></span
+          >
+        </div>
+
+        <div id="tailor-output" style="margin-top: 2rem; display: none">
+          <hr />
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <div class="section-title" style="font-size: 1.3rem; margin: 0">
+              Tailored CV
+            </div>
+            <div style="display: flex; gap: 0.5rem">
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="downloadTxt('tailor-cv-text', 'tailored-cv.txt')"
+              >
+                ↓ TXT
+              </button>
+              <button
+                class="btn btn-outline btn-sm"
+                onclick="downloadDoc('gen-cv-text', 'cv.doc')"
+              >
+                ↓ DOC
+              </button>
+              <button
+                class="btn btn-gold btn-sm"
+                onclick="downloadPDF('tailor-cv-text')"
+              >
+                ↓ PDF
+              </button>
+            </div>
+          </div>
+          <div class="output-box" id="tailor-cv-text"></div>
+        </div>
+      </div>
+
+      <!-- SCORE PANEL -->
+      <div class="panel" id="panel-score">
+        <div class="section-title">Score & Analyse</div>
+        <div class="section-sub">
+          Get a detailed match score and keyword analysis between your CV and a
+          job posting.
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Your CV</div>
+            <div class="field">
+              <textarea
+                id="s-cv"
+                style="min-height: 260px"
+                placeholder="Paste your CV text..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Job Description</div>
+            <div class="field">
+              <textarea
+                id="s-jd"
+                style="min-height: 260px"
+                placeholder="Paste the job description..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="scoreCV()">
+            ✦ Analyse Match
+          </button>
+        </div>
+
+        <div class="loader" id="score-loader">
+          <div class="spinner"></div>
+          <span
+            >Analysing your match<span class="dots"
+              ><span>.</span><span>.</span><span>.</span></span
+            ></span
+          >
+        </div>
+
+        <div id="score-output" style="margin-top: 2rem; display: none">
+          <hr />
+          <div class="two-col">
+            <div class="card" style="text-align: center">
+              <div class="card-title">Overall Match Score</div>
+              <div
+                class="score-number"
+                id="score-number"
+                style="font-size: 4rem; margin: 0.5rem 0"
+              >
+                —
+              </div>
+              <div class="score-label">out of 100</div>
+              <div class="score-breakdown" id="score-breakdown"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Keywords Found ✓</div>
+              <div class="keyword-list" id="kw-found"></div>
+              <div class="card-title" style="margin-top: 1.2rem">
+                Keywords Missing ✗
+              </div>
+              <div class="keyword-list" id="kw-missing"></div>
+            </div>
+            <div class="card full-col">
+              <div class="card-title">Detailed Analysis & Recommendations</div>
+              <div
+                id="score-analysis"
+                style="
+                  font-size: 0.87rem;
+                  line-height: 1.7;
+                  white-space: pre-wrap;
+                "
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REWRITE PANEL -->
+      <div class="panel" id="panel-rewrite">
+        <div class="section-title">Rewrite Bullet Points</div>
+        <div class="section-sub">
+          Transform weak, generic bullet points into powerful, quantified,
+          impact-driven statements.
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Current Bullet Points</div>
+            <div class="field">
+              <textarea
+                id="r-bullets"
+                style="min-height: 220px"
+                placeholder="• Responsible for managing the team&#10;• Worked on product features&#10;• Helped with customer support&#10;• Involved in data analysis"
+              ></textarea>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Context (optional but recommended)</div>
+            <div class="field">
+              <label>Your Role & Company</label
+              ><input
+                type="text"
+                id="r-role"
+                placeholder="e.g. Product Manager at Fintech startup"
+              />
+            </div>
+            <div class="field">
+              <label>Target Role</label
+              ><input
+                type="text"
+                id="r-target"
+                placeholder="e.g. Senior PM at a Series B SaaS company"
+              />
+            </div>
+            <div class="field">
+              <label>Any metrics or outcomes you recall</label
+              ><textarea
+                id="r-metrics"
+                placeholder="e.g. grew revenue 40%, managed £2M budget, team of 8, reduced churn by 15%..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="rewriteBullets()">
+            ✦ Rewrite Bullets
+          </button>
+        </div>
+
+        <div class="loader" id="rewrite-loader">
+          <div class="spinner"></div>
+          <span
+            >Crafting high-impact statements<span class="dots"
+              ><span>.</span><span>.</span><span>.</span></span
+            ></span
+          >
+        </div>
+
+        <div id="rewrite-output" style="margin-top: 2rem; display: none">
+          <hr />
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <div class="section-title" style="font-size: 1.3rem; margin: 0">
+              Rewritten Bullets
+            </div>
+            <button
+              class="btn btn-outline btn-sm"
+              onclick="copyText('rewrite-result')"
+            >
+              ⎘ Copy
+            </button>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title" style="color: var(--rust)">Before</div>
+              <div
+                id="rewrite-before"
+                style="
+                  font-size: 0.85rem;
+                  line-height: 1.8;
+                  color: var(--muted);
+                  white-space: pre-wrap;
+                "
+              ></div>
+            </div>
+            <div class="card" style="border-color: var(--gold)">
+              <div class="card-title" style="color: var(--sage)">
+                After — Optimised
+              </div>
+              <div
+                id="rewrite-result"
+                style="
+                  font-size: 0.85rem;
+                  line-height: 1.8;
+                  white-space: pre-wrap;
+                "
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
