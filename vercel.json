@@ -1,4 +1,5 @@
 {
+    "version": 2,
     "builds": [
       {
         "src": "server.js",
@@ -21,6 +22,20 @@
       {
         "src": "/api/(.*)",
         "dest": "/server.js"
+      },
+      {
+        "src": "/(.*)\\.css$",
+        "headers": {
+          "Content-Type": "text/css"
+        },
+        "dest": "/$1.css"
+      },
+      {
+        "src": "/(.*)\\.js$",
+        "headers": {
+          "Content-Type": "application/javascript"
+        },
+        "dest": "/$1.js"
       },
       {
         "src": "/(.*)",
